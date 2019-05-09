@@ -35,9 +35,7 @@ let citeReasons = [
 (async () => {
     const browser = await puppeteer.launch({ 
     	userDataDir: './user_data', 
-    	headless: false,
-    	devtools: true,
-    	slowMo: 250
+    	headless: false
     });
     const page = await browser.newPage();
     page.on('console', (log) => console[log._type](log._text));
