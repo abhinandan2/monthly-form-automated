@@ -1,17 +1,8 @@
 const puppeteer = require('puppeteer');
 
-let user = {
-	employeeId: "204",
-	designation: "Engineer",
-	department: "Technical",
-	appraiserName: "Abhinandan Shah",
-	jobKnowledge: 4,
-	workQuality: 4,
-	initiative: 4,
-	attendance: 4,
-	communication: 4,
-	dependability: 4,
-};
+let user = require('./config.js');
+
+let timeout = 3 * 60 * 1000;
 
 let citeReasons = [
 	'Improving my efficiency with time as well as trying to help all co workers as much as possible.',
@@ -30,18 +21,20 @@ let citeReasons = [
 	console.log("to",  to);
 })();
 
-
-
 (async () => {
     const browser = await puppeteer.launch({ 
     	userDataDir: './user_data', 
     	headless: false
     });
     const page = await browser.newPage();
-    page.on('console', (log) => console[log._type](log._text));
+    page.setDefaultTimeout(timeout)
     await page.goto('https://docs.google.com/forms/d/e/1FAIpQLSd02O-4rOCd0KgOIDLEUub3VS4TIinzE5HtNag36dRk7gyQ4w/viewform?c=0&w=1', { waitUntil: 'networkidle0' });
-    console.log("Running..");
     
+    // Wait for sign in process
+    console.log("Waiting for you to sign in.");
+    await page.waitFor('input[aria-label="Employee ID"]');
+    console.log("Sign in successful...");
+
     await page.type('input[aria-label="Employee ID"]', user.employeeId);
     await page.type('input[aria-label="Designation"]', user.designation);
     await page.click(`div[data-value="${user.department}"]`);
@@ -60,12 +53,16 @@ let citeReasons = [
 
     await page.click('div[aria-label="Send me a copy of my responses."]');
 
-    await Promise.all([
-    	page.waitForNavigation(),
-		await page.click('.freebirdFormviewerViewNavigationButtons')
-    ]);
+  //   await Promise.all([
+  //   	page.waitForNavigation(),
+		// await page.click('.freebirdFormviewerViewNavigationButtons')
+  //   ]);
 
-	await page.click('.freebirdFormviewerViewNotificationsResubmitButton')
+    try {
+    	await page.click('.freebirdFormviewerViewNotificationsResubmitButton')
+    } catch (e) {
+        console.log("No resubmit found.");
+    }
 
-    await browser.close();
+    // await browser.close();
 })();
